@@ -1,81 +1,209 @@
-Picotainer
-==========
-[![Latest Stable Version](https://poser.pugx.org/mouf/picotainer/v/stable.svg)](https://packagist.org/packages/mouf/picotainer)
-[![Latest Unstable Version](https://poser.pugx.org/mouf/picotainer/v/unstable.svg)](https://packagist.org/packages/mouf/picotainer)
-[![License](https://poser.pugx.org/mouf/picotainer/license.svg)](https://packagist.org/packages/mouf/picotainer)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/thecodingmachine/picotainer/badges/quality-score.png?b=1.0)](https://scrutinizer-ci.com/g/thecodingmachine/picotainer/?branch=1.0)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/3ac43eac-dcec-496a-9e0f-5fe82f8b3824/mini.png)](https://insight.sensiolabs.com/projects/3ac43eac-dcec-496a-9e0f-5fe82f8b3824)
-[![Build Status](https://travis-ci.org/thecodingmachine/picotainer.svg?branch=1.0)](https://travis-ci.org/thecodingmachine/picotainer)
-[![Coverage Status](https://coveralls.io/repos/thecodingmachine/picotainer/badge.svg?branch=1.0)](https://coveralls.io/r/thecodingmachine/picotainer?branch=1.0)
+Jasny Container
+===
 
-This package contains a really minimalist dependency injection container (24 lines of code!) compatible with
+[![Build Status](https://travis-ci.org/jasny/container.svg?branch=master)](https://travis-ci.org/jasny/container)
+[![Code Coverage](https://scrutinizer-ci.com/g/jasny/container/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/jasny/container/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jasny/container/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/jasny/container/?branch=master)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/...../mini.png)](https://insight.sensiolabs.com/projects/.....)
+
+This package contains a simple dependency injection container compatible with
 [container-interop](https://github.com/container-interop/container-interop) (supports ContainerInterface and
-delegate lookup feature).  It is also, therefore, compatible with
+**delegate lookup** feature).  It is also, therefore, compatible with
 [PSR-11](https://github.com/php-fig/fig-standards/blob/master/proposed/container.md), the FIG container standard.
 
-Picotainer is heavily influenced by the [Pimple DI container](http://pimple.sensiolabs.org/). Think about it
-as a Pimple container with even less features, and ContainerInterop compatibility.
+The container supports (explicit) [**autowiring**](#autowiring) and [**subcontainers**](#subcontainers).
+`Jasny/Container` objects are immutable.
+
+Containers are used to help with [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection), creating
+loosly coupled applications. DI helps in making making your application better testable and maintainable.
+
+The following type of entries are typically added to the container;
+
+- **Services** are objects of for which there is typically only one instance that is available throughout the
+  application. Here DI replaces the use of global objects, singletons and service locators.
+- [**Abstract factories**](https://sourcemaking.com/design_patterns/abstract_factory) are services specific for creating
+  new instances. Use factories instead of using `new` in your classes. The factory allows mocking objects or using a
+  different/customized implementation of the class.
+- [**Prototype objects**](https://sourcemaking.com/design_patterns/prototype) is an alternative to using factories,
+  where the prototype object is immutable. The object will be clones when used.
+- **Configuration values** can be directly returned by the container, this is preferable to using a global configuration
+  array, global constants or getting environment variables directly.
+
+_Pro tip:_ It's sometimes harder to get a dependency to a (deeply nested) object. In this case you might want to resort
+to using the global scope via a Service Locator, Facade, Singleton. Instead resolve the nesting by creating an abstract
+factory for the nested object. Inject the service into the factory.
+
+##### Compared to PHP-DI
+[PHP-DI](https://php-di.com) is the cream of the crop when it comes to dependency injection in PHP. However using it can
+make your application feel too magical, resulting in unexpected behaviour and problems when debugging.
+
+Jasny Container does a lot less, but can be used to accomplish the same, giving you more control over your application.
+
+_This library is based on [Picontainer](https://github.com/thecodingmachine/picotainer)._
 
 Installation
-------------
+---
 
-Before using Picotainer in your project, add it to your `composer.json` file:
+The Jasny Container package is available on [packagist](https://packagist.org/packages/jasny/meta). Install it using
+composer:
 
-```
-$ ./composer.phar require mouf/picotainer ~1.0
-```
+    composer require jasny/container
 
+The packages adheres to the [SemVer](http://semver.org/) specification, and there will be full backward compatibility
+between minor versions.
 
-Storing entries in the container
---------------------------------
+Declaring entries in the container
+---
 
-Creating a container is a matter of creating a `Picotainer` instance.
-The `Picotainer` class takes 2 parameters:
-
-- the list of entries, as an **array of anonymous functions**
-- an optional [delegate-lookup container](https://github.com/container-interop/container-interop/blob/master/docs/Delegate-lookup.md)
+Creating a container is a matter of creating a `Container` instance passing the list of entries, as an
+**array of anonymous functions**.
 
 ```php
-use Mouf\Picotainer\Picotainer;
+use Jasny\Container;
 use Psr\Container\ContainerInterface;
 
-$container = new Picotainer([
-	"myInstance"=>function(ContainerInterface $container) {
-		return new MyInstance();
-	},
-	"myOtherInstance"=>function(ContainerInterface $container) {
-		return new MyOtherInstance($container->get('myInstance'));
-	}
-	"myParameter"=>function(ContainerInterface $container) {
-		return MY_CONSTANT;
-	}
-], $rootContainer);
+$container = new Container([
+    Foo::class => function(ContainerInterface $container) {
+        return new Foo();
+    },
+    BarInterface::class => function(ContainerInterface $container) {
+        $foo = $container->get(Foo::class);
+        return new Bar($foo);
+    },
+    "bar" => function(ContainerInterface $container) {
+        return $container->get('bar'); // Alias for BarInterface  
+    },
+    "APPLICATION_ENV" => function(ContainerInterface $container) {
+        return getenv('APPLICATION_ENV');
+    }
+]);
 ```
 
-The list of entries is an associative array.
+The list of entries is an associative array. The order of entries doesn't matter.
 
 - The key is the name of the entry in the container
 - The value is an **anonymous function** that will return the entry
 
 The entry can be anything (an object, a scalar value, a resource, etc...)
 
-The **anonymous function** must accept one parameter: the container on which dependencies will be fetched.
-The container is the "delegate-lookup container" if it was passed as the second argument of the constructor,
-or the Picotainer instance itself if no delegate lookup container was passed.
+The anonymous function must accept one parameter: the container on which dependencies will be fetched.
 
+Once the container has been created it's **immutable**, entries can't be added, removed or replaced.
 
-Fetching entries from the container
------------------------------------
+#### Delegated lookup
 
-Fetching entries from the container is as simple as calling the `get` method:
+If a delegate-lookup container was passed as the second argument of the constructor, it will be passed to the anonymous
+function instead.
 
 ```php
-$myInstance = $container->get('myInstance');
+$otherContainer = new Container([
+    ZooInterface::class => function(ContainerInterface $container) {
+        $foo = $container->get(Foo::class); // $container is the $rootContainer
+        return new Zoo($foo);
+    }
+}, $rootContainer);
 ```
 
-Why the need for this package?
-------------------------------
+#### Entry loader
 
-This package is part of a long-term effort to bring [interoperability between DI containers](https://github.com/container-interop/container-interop). The ultimate goal is to
-make sure that multiple containers can communicate together by sharing entries (one container might use an entry from another
-container, etc...)
+The `Jasny\Container\EntryLoader` can be used to load entries from PHP files in a directory. This is useful for larger
+applications to organize service declarations.
+
+```php
+use Jasny\Container;
+use Jasny\Container\EntryLoader;
+use Psr\Container\ContainerInterface;
+
+$container = new Container(new EntryLoader('path/to/declarations'));
+```
+
+Note that any `iterable` may be passed to the container, not just plain arrays.
+
+Fetching entries from the container
+---
+
+Fetching entries from the container is done using the `get` method:
+
+```php
+$bar = $container->get(BarInterface::class);
+```
+
+Calls to the `get` method should only return an entry if the entry is part of the container. If the entry is not part of
+the container, a `Jasny\Container\NotFoundException` is thrown.
+
+### Type checking
+
+If the entry identifier is an interface name, a notice is triggered if the entry doesn't implement the interface. This
+is only done for interfaces. The container doesn't check class hierarchy. Please use interfaces where possible, so the
+application dependencies are done on abstractions rather than implementations.
+
+### Subcontainers
+
+Entries of the container may also be a container themselves. In this case, you can use the `entry:subentry` to get an
+entry from the subcontainer. The subcontainer needs to implement `Psr\Container\ContainerInterface`, it doesn't need to
+be a `Jasny\Container` object.
+
+```php
+use Jasny\Container;
+use Psr\Container\ContainerInterface;
+
+$container = new Container([
+    'config' => function(ContainerInterface $container) {
+        return new Container([
+            'secret' => function() {
+                return getenv('APPLICATION_SECRET');
+            }
+        ]);
+    }
+]);
+
+$secret = $container->get('config:secret');
+``` 
+
+### Autowiring
+
+The container can be used to instantiate an object (instead of using `new`), automatically determining the dependencies.
+This can be handy when you find yourself constantly modifying specific entries.
+
+To use autowiring, add a `Jasny\Container\AutowireInterface` entry to the container.
+
+```php
+use Jasny\Container;
+use Jasny\Container\AutowireInterface;
+use Jasny\Container\Autowire\ReflectionAutowire;
+use Psr\Container\ContainerInterface;
+
+$container = new Container([
+    AutowireInterface::class => function(ContainerInterface $container) {
+        return new ReflectionAutowire($container);
+    },
+    Foo::class => function(ContainerInterface $container) {
+        return new Foo();
+    },
+    BarInterface::class => function(ContainerInterface $container) {
+        return $container->instantiate(Bar::class);
+    }
+]);
+```
+
+Autowiring might also be used in an abstract factory, if the construct method isn't defined in the interface and thus
+may differ per implementation. This is typically the case with objects like controllers.
+
+_Pro tip:_ Autowiring increases coupling, so use it sparsely. For example different classes are set to use the `cache`
+service. To use different caching methods, requires modifying the source of one (or both) of the classes.
+
+`Jasny\Container` deliberately doesn't support autowiring for properties or methods. Please explicitly call those
+methods from the entry function or use an abstract factory.
+
+### Checking entries
+
+To check if the container has an entry you can use the `has` method. It return `true` if the entry is part of the
+container and `false` otherwise.
+
+#### Null object
+
+_Pro tip:_ Rather than using the `has` method, create a
+[Null object](https://sourcemaking.com/design_patterns/null_object). A null object correctly implements an interface,
+but does nothing. For example a `NoCache` object that doesn't actually cache values. Removing the `if` statements
+reduces complexity. The function calls are typically not more expensive than the if statement, so it doesn't hurt
+performance.
