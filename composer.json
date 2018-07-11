@@ -1,43 +1,43 @@
 {
-	"name": "jasny/container",
-	"type": "library",
-	"description" : "Simple dependency injection container compatible with container-interop",
-	"keywords" : [
-		"dependency injection",
-		"DI",
-		"container-interop",
-		"container",
-		"psr11"
-	],
-	"license": "MIT",
-	"homepage": "http://jasny.github.com/container",
-	"authors": [
-		{
-			"name": "Arnold Daniels",
-			"email": "arnold@jasny.net",
-			"homepage": "http://www.jasny.net"
-		}
-	],
-	"support": {
-		"issues": "https://github.com/jasny/container/issues",
-		"source": "https://github.com/jasny/container"
-	},
-	"require": {
-		"php": ">=7.1",
-        "container-interop/container-interop" : "~1.2",
+    "name": "jasny/container",
+    "type": "library",
+    "description": "Simple dependency injection container compatible with container-interop",
+    "keywords": [
+        "dependency injection",
+        "DI",
+        "container-interop",
+        "container",
+        "PSR-11"
+    ],
+    "license": "MIT",
+    "homepage": "http://jasny.github.com/container",
+    "authors": [
+        {
+            "name": "Arnold Daniels",
+            "email": "arnold@jasny.net",
+            "homepage": "http://www.jasny.net"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/jasny/container/issues",
+        "source": "https://github.com/jasny/container"
+    },
+    "require": {
+        "php": ">=7.1",
+        "container-interop/container-interop": "~1.2",
         "psr/container": "^1.0"
-	},
-	"require-dev": {
-		"jasny/php-code-quality": "^2.3"
-	},
-	"autoload": {
-		"psr-4": {
-			"Jasny\\": "src/"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Jasny\\": "tests/"
-		}
-	}
+    },
+    "require-dev": {
+        "jasny/php-code-quality": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jasny\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jasny\\": "tests/"
+        }
+    }
 }
