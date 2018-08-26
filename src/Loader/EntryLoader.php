@@ -27,7 +27,9 @@ class EntryLoader implements \Iterator
      */
     public function __construct(string $path)
     {
-        $this->glob = new \GlobIterator($path . '/*.php', self::CURRENT_AS_PATHNAME | self::SKIP_DOTS);
+        $flags = \GlobIterator::CURRENT_AS_PATHNAME | \GlobIterator::SKIP_DOTS;
+        $this->glob = new \GlobIterator($path . '/*.php', $flags);
+
         $this->load();
     }
 

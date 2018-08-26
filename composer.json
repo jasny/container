@@ -23,7 +23,7 @@
         "source": "https://github.com/jasny/container"
     },
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.1.0",
         "container-interop/container-interop": "~1.2",
         "psr/container": "^1.0",
         "jasny/php-functions": "^3.3"
@@ -41,5 +41,23 @@
         "psr-4": {
             "Jasny\\Container\\Tests\\": "tests/"
         }
-    }
+    },
+    "scripts": {
+        "test": [
+            "phpunit",
+            "phpcloc cloc src",
+            "phpcs -p src",
+            "phpstan analyse"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Run all tests and quality checks"
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
