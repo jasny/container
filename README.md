@@ -4,7 +4,9 @@ Jasny Container
 [![Build Status](https://travis-ci.org/jasny/container.svg?branch=master)](https://travis-ci.org/jasny/container)
 [![Code Coverage](https://scrutinizer-ci.com/g/jasny/container/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/jasny/container/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jasny/container/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/jasny/container/?branch=master)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/...../mini.png)](https://insight.sensiolabs.com/projects/.....)
+[![BCH compliance](https://bettercodehub.com/edge/badge/jasny/container?branch=master)](https://bettercodehub.com/results/jasny/container)
+[![Packagist Stable Version](https://img.shields.io/packagist/v/jasny/container.svg)](https://packagist.org/packages/jasny/container)
+[![Packagist License](https://img.shields.io/packagist/l/jasny/container.svg)](https://packagist.org/packages/jasny/container)
 
 This package contains a simple dependency injection container compatible with
 [container-interop](https://github.com/container-interop/container-interop) (supports ContainerInterface and
