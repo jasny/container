@@ -12,7 +12,7 @@ This package contains a simple dependency injection container compatible with
 [PSR-11](https://github.com/php-fig/fig-standards/blob/master/proposed/container.md), the FIG container standard.
 
 The container supports (explicit) [**autowiring**](#autowiring) and [**subcontainers**](#subcontainers).
-`Jasny/Container` objects are immutable.
+`Container` objects are immutable.
 
 Containers are used to help with [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection), creating
 loosly coupled applications. DI helps in making making your application better testable and maintainable.
@@ -59,7 +59,7 @@ Creating a container is a matter of creating a `Container` instance passing the 
 **array of anonymous functions**.
 
 ```php
-use Jasny\Container;
+use Jasny\Container\Container;
 use Psr\Container\ContainerInterface;
 
 $container = new Container([
@@ -110,14 +110,72 @@ The `Jasny\Container\EntryLoader` can be used to load entries from PHP files in 
 applications to organize service declarations.
 
 ```php
-use Jasny\Container;
+use Jasny\Container\Container;
 use Jasny\Container\EntryLoader;
-use Psr\Container\ContainerInterface;
 
 $container = new Container(new EntryLoader('path/to/declarations'));
 ```
 
 Note that any `iterable` may be passed to the container, not just plain arrays.
+
+#### Class loader
+
+The `Jasny\Container\ClassLoader` is an alternative to the entry loader, to create entries based on a list of classes.
+The loader takes an `Iterator` with fully qualified classnames (FQCNs).
+
+```php
+use Jasny\Container\Container;
+use Jasny\Container\ClassLoader;
+
+$loader = new ClassLoader(new \ArrayIterator(['App\Foo', 'App\Bar', 'App\Qux']));
+$container = new Container($loader);
+```
+
+By default the entry key is the class name and autowiring is used to instantiate the service.
+
+The second (optional) argument is a callback that is applied to each class to create the container entries. This
+function must return an array of Closures.
+
+```php
+use Jasny\Container\Container;
+use Jasny\Container\ClassLoader;
+use Psr\Container\ContainerInterface;
+
+$callback = function(string $class): array {
+    $baseClass = preg_replace('/^.+\\/', '', $class);
+    $id = Jasny\snakecase($class);
+
+    return [
+        $id => function(ContainerInterface $container) use ($class) {
+            $colors = $container->get('colors');
+            return new $class($colors);
+        }
+    ];
+};
+
+$loader = new ClassLoader(new \ArrayIterator(['App\Foo', 'App\Bar', 'App\Qux']), $callback);
+$container = new Container($loader);
+```
+
+Instead of just supplying a list of classes, you might want to scan a folder and add all the classes from that folder.
+This can be done with `FQCNIterator` from [jasny/fqcn-reader](https://github.com/jasny/fqcn-reader).
+
+```php
+use Jasny\Container\Container;
+use Jasny\Container\ClassLoader;
+use Jasny\FQCN\FQCNIterator;
+
+$directoryIterator = new \RecursiveDirectoryIterator('path/to/project/services');
+$recursiveIterator = new \RecursiveIteratorIterator($directoryIterator);
+$sourceIterator = new \RegexIterator($recursiveIterator, '/^.+\.php$/i', \RegexIterator::GET_MATCH);
+
+$fqcnIterator = new FQCNIterator($sourceIterator);
+
+$loader = new ClassLoader($fqcnIterator);
+$container = new Container($loader);
+```
+
+This can also be combined with a callback.
 
 Fetching entries from the container
 ---
@@ -162,15 +220,16 @@ $secret = $container->get('config:secret');
 
 ### Autowiring
 
-The container can be used to instantiate an object (instead of using `new`), automatically determining the dependencies.
-This can be handy when you find yourself constantly modifying specific entries.
+The container can be used to instantiate an object (instead of using `new`), automatically determining the dependencies,
+using the [`jasny\autowire`](https://github.com/jasny/autowire) library. This can be handy when you find yourself
+constantly modifying specific entries.
 
-To use autowiring, add a `Jasny\Container\AutowireInterface` entry to the container.
+To use autowiring, add a `Jasny\AutowireInterface` entry to the container.
 
 ```php
 use Jasny\Container;
-use Jasny\Container\AutowireInterface;
-use Jasny\Container\Autowire\ReflectionAutowire;
+use Jasny\Autowire\AutowireInterface;
+use Jasny\Autowire\ReflectionAutowire;
 use Psr\Container\ContainerInterface;
 
 $container = new Container([
@@ -181,19 +240,13 @@ $container = new Container([
         return new Foo();
     },
     BarInterface::class => function(ContainerInterface $container) {
-        return $container->instantiate(Bar::class);
+        return $container->autowire(Bar::class);
     }
 ]);
 ```
 
-Autowiring might also be used in an abstract factory, if the construct method isn't defined in the interface and thus
-may differ per implementation. This is typically the case with objects like controllers.
-
 _Pro tip:_ Autowiring increases coupling, so use it sparsely. For example different classes are set to use the `cache`
 service. To use different caching methods, requires modifying the source of one (or both) of the classes.
-
-`Jasny\Container` deliberately doesn't support autowiring for properties or methods. Please explicitly call those
-methods from the entry function or use an abstract factory.
 
 ### Checking entries
 
