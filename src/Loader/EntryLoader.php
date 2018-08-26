@@ -1,23 +1,21 @@
 <?php
 
-namespace Jasny\Container;
+declare(strict_types=1);
 
-use Iterator;
-use GlobIterator;
-use ArrayIterator;
+namespace Jasny\Container\Loader;
 
 /**
  * Load entries from declaration PHP files
  */
-class EntryLoader implements Iterator
+class EntryLoader implements \Iterator
 {
     /**
-     * @var GlobIterator
+     * @var \GlobIterator
      */
     protected $glob;
 
     /**
-     * @var ArrayIterator
+     * @var \ArrayIterator
      */
     protected $entries;
 
@@ -29,14 +27,16 @@ class EntryLoader implements Iterator
      */
     public function __construct(string $path)
     {
-        $this->glob = new GlobIterator($path . '/*.php', self::CURRENT_AS_PATHNAME | self::SKIP_DOTS);
+        $this->glob = new \GlobIterator($path . '/*.php', self::CURRENT_AS_PATHNAME | self::SKIP_DOTS);
         $this->load();
     }
 
     /**
      * Load new entries
+     *
+     * @return void
      */
-    protected function load()
+    protected function load(): void
     {
         if (!$this->glob->valid()) {
             return;
@@ -45,7 +45,7 @@ class EntryLoader implements Iterator
         $file = $this->glob->current();
 
         $entries = include $file;
-        $this->entries = new ArrayIterator($entries);
+        $this->entries = new \ArrayIterator($entries);
 
         $this->glob->next();
     }
@@ -55,7 +55,7 @@ class EntryLoader implements Iterator
      *
      * @return callable
      */
-    public function current()
+    public function current(): callable
     {
         return $this->entries->current();
     }
@@ -63,9 +63,9 @@ class EntryLoader implements Iterator
     /**
      * Move forward to next element
      *
-     * @return void Any returned value is ignored.
+     * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->entries->next();
 
@@ -87,20 +87,20 @@ class EntryLoader implements Iterator
     /**
      * Checks if current position is valid
      *
-     * @return boolean The return value will be casted to boolean and then evaluated.
+     * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->entries->valid();
     }
 
     /**
-     * Rewind the Iterator to the first element
+     * Rewind the iterator to the first element
      *
-     * @return void Any returned value is ignored.
+     * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
-        return $this->entries->rewind();
+        $this->entries->rewind();
     }
 }

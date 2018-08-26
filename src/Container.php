@@ -1,13 +1,15 @@
 <?php
 
-namespace Jasny;
+declare(strict_types=1);
 
-use Closure;
+namespace Jasny\Container;
+
 use Interop\Container\ContainerInterface as InteropContainer;
 use Psr\Container\ContainerInterface as Psr11Container;
-use Jasny\AutowireInterface;
-use Jasny\Container\NotFoundException;
-use Jasny\Container\NoSubContainerException;
+use Jasny\Container\Exception\NotFoundException;
+use Jasny\Container\Exception\NoSubContainerException;
+
+use function Jasny\expect_type;
 
 /**
  * This class is a minimalist dependency injection container.
@@ -25,7 +27,7 @@ class Container implements InteropContainer
     /**
      * The array of closures defining each entry of the container.
      *
-     * @var Closure[]
+     * @var \Closure[]
      */
     protected $callbacks;
 
@@ -34,14 +36,14 @@ class Container implements InteropContainer
      *
      * @var mixed[]
      */
-    protected $instances;
+    protected $instances = [];
 
 
     /**
      * Class constructor
      *
-     * @param iterable|Closure[] $entries                 Entries must be passed as an array of anonymous functions.
-     * @param Psr11Container     $delegateLookupContainer Optional delegate lookup container.
+     * @param iterable|\Closure[] $entries                 Entries must be passed as an array of anonymous functions.
+     * @param Psr11Container      $delegateLookupContainer Optional delegate lookup container.
      */
     public function __construct(iterable $entries, Psr11Container $delegateLookupContainer = null)
     {
@@ -58,6 +60,8 @@ class Container implements InteropContainer
      */
     public function get($identifier)
     {
+        expect_type($identifier, 'string');
+
         if (strstr($identifier, ':') !== false) {
             return $this->getSub(...explode(':', $identifier, 2));
         }
@@ -89,7 +93,7 @@ class Container implements InteropContainer
      * @param string $subidentifier
      * @return mixed
      */
-    protected function getSub($identifier, $subidentifier)
+    protected function getSub(string $identifier, string $subidentifier)
     {
         $subcontainer = $this->get($identifier);
 
@@ -109,6 +113,8 @@ class Container implements InteropContainer
      */
     public function has($identifier)
     {
+        expect_type($identifier, 'string');
+
         if (strstr($identifier, ':') !== false) {
             return $this->hasSub(...explode(':', $identifier, 2));
         }
@@ -123,7 +129,7 @@ class Container implements InteropContainer
      * @param string $subidentifier
      * @return bool
      */
-    protected function hasSub($identifier, $subidentifier)
+    protected function hasSub(string $identifier, string $subidentifier): bool
     {
         return $this->has($identifier) && $this->get($identifier) instanceof Psr11Container
             && $this->get($identifier)->has($subidentifier);
@@ -136,8 +142,8 @@ class Container implements InteropContainer
      * @param string $class
      * @return object
      */
-    public function instantiate($class)
+    public function autowire(string $class)
     {
-        return $this->get(AutowireInterface::class)->instantiate($class);
+        return $this->get('Jasny\Autowire\AutowireInterface')->instantiate($class);
     }
 }

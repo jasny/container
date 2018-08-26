@@ -1,13 +1,15 @@
 <?php
 
-namespace Jasny\Container;
+declare(strict_types=1);
 
-use OutOfBoundsException;
+namespace Jasny\Container\Exception;
+
+use UnexpectedValueException;
 use Interop\Container\Exception\NotFoundException as Psr11Exception;
 
 /**
  * This exception is thrown when an identifier is passed to the container and is not found.
  */
-class NotFoundException extends OutOfBoundsException implements Psr11Exception
+class NoSubContainerException extends UnexpectedValueException implements Psr11Exception
 {
 }
