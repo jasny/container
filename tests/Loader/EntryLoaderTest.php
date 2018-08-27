@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Jasny\Container\Loader\EntryLoader
+ * @covers \Jasny\Container\Loader\AbstractLoader
  */
 class EntryLoaderTest extends TestCase
 {
@@ -77,9 +78,42 @@ class EntryLoaderTest extends TestCase
         $this->assertEquals(['red' => 22, 'green' => 125], $result);
     }
 
+    public function testIteratorToArray()
+    {
+        $iterator = new \ArrayIterator(['vfs://root/r.php', 'vfs://root/g.php', 'vfs://root/b.php']);
+        $entries = new EntryLoader($iterator);
+
+        $result = iterator_to_array($entries);
+
+        $this->assertEquals(['red', 'green', 'blue'], array_keys($result));
+        $this->assertContainsOnlyInstancesOf(\Closure::class, $result);
+    }
+
+    public function testIteratorToArrayEmpty()
+    {
+        $iterator = new \ArrayIterator([]);
+        $entries = new EntryLoader($iterator);
+
+        $result = iterator_to_array($entries);
+
+        $this->assertEquals([], $result);
+    }
+
+    public function testIteratorToArrayRewind()
+    {
+        $iterator = new \ArrayIterator(['vfs://root/r.php', 'vfs://root/g.php', 'vfs://root/b.php']);
+        $entries = new EntryLoader($iterator);
+
+        $first = iterator_to_array($entries);
+        $this->assertEquals(['red', 'green', 'blue'], array_keys($first));
+
+        $second = iterator_to_array($entries);
+        $this->assertEquals(['red', 'green', 'blue'], array_keys($second));
+    }
+
     /**
      * @expectedException \UnexpectedValueException
-     * @expectedExceptionMessage
+     * @expectedExceptionMessage Failed to load container entries from 'vfs://root/blank.php': Invalid or no return value
      */
     public function testIterateUnexpectedValue()
     {
@@ -89,5 +123,13 @@ class EntryLoaderTest extends TestCase
         foreach ($entries as $key => $callback) {
             $callback();
         }
+    }
+
+    public function testGetInnerIterator()
+    {
+        $iterator = new \ArrayIterator();
+        $entries = new EntryLoader($iterator);
+
+        $this->assertSame($iterator, $entries->getInnerIterator());
     }
 }

@@ -151,7 +151,6 @@ class ContainerTest extends TestCase
 
     /**
      * @expectedException \Jasny\Container\Exception\NotFoundException
-     * @expectedExceptionMessage Failed to load container entries from 'vfs://root/blank.php': Expected array, boolean returned
      */
     public function testAutowireNotFound()
     {

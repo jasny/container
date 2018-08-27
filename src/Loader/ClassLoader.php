@@ -6,21 +6,18 @@ namespace Jasny\Container\Loader;
 
 use Psr\Container\ContainerInterface;
 
+use function Jasny\expect_type;
+
 /**
  * Load entries from class.
  */
-class ClassLoader implements \OuterIterator
+class ClassLoader extends AbstractLoader
 {
     /**
      * Logic to create entries
      * @var callable
      */
     protected $apply;
-
-    /**
-     * @var \Iterator
-     */
-    protected $classes;
 
 
     /**
@@ -31,71 +28,33 @@ class ClassLoader implements \OuterIterator
      */
     public function __construct(\Iterator $classes, callable $apply = null)
     {
-        $this->classes = $classes;
         $this->apply = $apply ?? [$this, 'createEntry'];
+
+        parent::__construct($classes);
     }
 
 
     /**
-     * Return the current element
-     *
-     * @return \Closure[]|null
-     */
-    public function current(): ?array
-    {
-        return call_user_func($this->apply, $this->classes->current());
-    }
-
-    /**
-     * Move forward to next element
+     * Create new entries
      *
      * @return void
      */
-    public function next(): void
+    protected function prepareNext(): void
     {
-        $this->classes->next();
-    }
+        if (!$this->items->valid()) {
+            return;
+        }
 
-    /**
-     * Return the key of the current element
-     *
-     * @return string|null
-     */
-    public function key(): ?string
-    {
-        return $this->classes->current();
-    }
+        $class = $this->items->current();
+        $entries = call_user_func($this->apply, $class);
 
-    /**
-     * Checks if current position is valid
-     *
-     * @return boolean
-     */
-    public function valid(): bool
-    {
-        return $this->classes->valid();
-    }
+        expect_type($entries, 'array', \UnexpectedValueException::class,
+            "Failed to load container entries for '$class': Expected array, callback returned %s");
 
-    /**
-     * Rewind the Iterator to the first element
-     *
-     * @return void
-     */
-    public function rewind(): void
-    {
-        $this->classes->rewind();
-    }
+        $this->entries = new \ArrayIterator($entries);
 
-    /**
-     * Returns the inner iterator for the current entry.
-     *
-     * @return \Iterator
-     */
-    public function getInnerIterator(): \Iterator
-    {
-        return $this->classes;
+        $this->items->next();
     }
-
 
     /**
      * Create a container entry for a class using autowiring.
