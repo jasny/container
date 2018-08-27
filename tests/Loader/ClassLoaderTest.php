@@ -26,7 +26,8 @@ class ClassLoaderTest extends TestCase
             ->withConsecutive(['Foo'], ['Bar'], ['App\Qux'])->willReturnOnConsecutiveCalls($foo, $bar, $qux);
 
         $container = $this->createMock(ContainerInterface::class);
-        $container->method('get')->with('Jasny\Autowire\AutowireInterface')->willReturn($autowire);
+        $container->expects($this->any())->method('get')->with('Jasny\Autowire\AutowireInterface')
+            ->willReturn($autowire);
 
         $result = [];
 
