@@ -26,7 +26,7 @@
         "php": ">=7.1.0",
         "container-interop/container-interop": "~1.2",
         "psr/container": "^1.0",
-        "jasny/php-functions": "^3.3"
+        "jasny/php-functions": "^2.3|^3.1"
     },
     "require-dev": {
         "jasny/php-code-quality": "^2.3",
