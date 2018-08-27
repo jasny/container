@@ -4,7 +4,6 @@ namespace Jasny\Container\Tests;
 
 use Jasny\Autowire\AutowireInterface;
 use Jasny\Container\Container;
-use Jasny\Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
@@ -42,7 +41,7 @@ class ContainerTest extends TestCase
         ]);
 
         $container2 = new Container([
-            "instance2" => function ($container) { return $container->get('instance'); }
+            "instance2" => function (ContainerInterface $container) { return $container->get('instance'); }
         ], $container);
 
         $this->assertSame('value', $container2->get('instance2'));
@@ -151,7 +150,8 @@ class ContainerTest extends TestCase
     }
 
     /**
-     * @expectedException Jasny\Container\Exception\NotFoundException
+     * @expectedException \Jasny\Container\Exception\NotFoundException
+     * @expectedExceptionMessage Failed to load container entries from 'vfs://root/blank.php': Expected array, boolean returned
      */
     public function testAutowireNotFound()
     {

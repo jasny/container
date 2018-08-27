@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Jasny\Container\Loader;
 
+use function Jasny\expect_type;
+
 /**
  * Load entries from declaration PHP files
  */
 class EntryLoader implements \Iterator
 {
     /**
-     * @var \GlobIterator
+     * @var \Iterator
      */
-    protected $glob;
+    protected $files;
 
     /**
      * @var \ArrayIterator
@@ -23,13 +25,11 @@ class EntryLoader implements \Iterator
     /**
      * EntryLoader constructor.
      *
-     * @param string $path
+     * @param \Iterator $files
      */
-    public function __construct(string $path)
+    public function __construct(\Iterator $files)
     {
-        $flags = \GlobIterator::CURRENT_AS_PATHNAME | \GlobIterator::SKIP_DOTS;
-        $this->glob = new \GlobIterator($path . '/*.php', $flags);
-
+        $this->files = $files;
         $this->load();
     }
 
@@ -40,16 +40,19 @@ class EntryLoader implements \Iterator
      */
     protected function load(): void
     {
-        if (!$this->glob->valid()) {
+        if (!$this->files->valid()) {
             return;
         }
 
-        $file = $this->glob->current();
+        $file = $this->files->current();
 
         $entries = include $file;
+        expect_type($entries, 'array', \UnexpectedValueException::class,
+            "Failed to load container entries from '$file': Expected array, %s returned");
+
         $this->entries = new \ArrayIterator($entries);
 
-        $this->glob->next();
+        $this->files->next();
     }
 
     /**
@@ -71,7 +74,7 @@ class EntryLoader implements \Iterator
     {
         $this->entries->next();
 
-        if (!$this->entries->valid()) {
+        while (!$this->entries->valid() && $this->files->valid()) {
             $this->load();
         }
     }

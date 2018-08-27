@@ -31,9 +31,10 @@ The following type of entries are typically added to the container;
 - **Configuration values** can be directly returned by the container, this is preferable to using a global configuration
   array, global constants or getting environment variables directly.
 
-_Pro tip:_ It's sometimes harder to get a dependency to a (deeply nested) object. In this case you might want to resort
-to using the global scope via a Service Locator, Facade, Singleton. Instead resolve the nesting by creating an abstract
-factory for the nested object. Inject the service into the factory.
+_Pro tip:_ It's sometimes harder to get a dependency to a (deeply nested) object. In this case you might be tempted to
+resort to using the global scope via a Service Locator, Facade or Singleton. **Do not do this!** It will make your code
+much harder to test, maintain and reuse. Instead resolve the nesting by creating an abstract factory for the nested
+object and inject the service into the factory.
 
 ##### Compared to PHP-DI
 [PHP-DI](https://php-di.com) is the cream of the crop when it comes to dependency injection in PHP. However using it can
@@ -86,11 +87,11 @@ The list of entries is an associative array. The order of entries doesn't matter
 - The key is the name of the entry in the container
 - The value is an **anonymous function** that will return the entry
 
-The entry can be anything (an object, a scalar value, a resource, etc...)
-
-The anonymous function must accept one parameter: the container on which dependencies will be fetched.
-
-Once the container has been created it's **immutable**, entries can't be added, removed or replaced.
+The entry can be anything (an object, a scalar value, a resource, etc...) The anonymous function must accept one
+parameter: the container on which dependencies will be fetched.
+ 
+Any `iterable` may be passed to the container, not just plain arrays. Once the container has been created it's
+**immutable** entries can't be added, removed or replaced.
 
 #### Delegated lookup
 
@@ -108,22 +109,29 @@ $otherContainer = new Container([
 
 #### Entry loader
 
-The `Jasny\Container\EntryLoader` can be used to load entries from PHP files in a directory. This is useful for larger
-applications to organize service declarations.
+The `EntryLoader` can be used to load entries from PHP files in a directory. This is useful for larger applications to
+organize service declarations.
 
 ```php
 use Jasny\Container\Container;
-use Jasny\Container\EntryLoader;
+use Jasny\Container\Loader\EntryLoader;
 
-$container = new Container(new EntryLoader('path/to/declarations'));
+$files = new \GlobIterator(
+    'path/to/declarations/*.php',
+     \GlobIterator::CURRENT_AS_PATHNAME | \GlobIterator::SKIP_DOTS
+);
+
+$loader = new EntryLoader($files);
+$container = new Container($loader);
 ```
 
-Note that any `iterable` may be passed to the container, not just plain arrays.
+The `EntryLoader` takes an Iterator. This can be an simple `ArrayIterator`, but more typically a `GlobIterator` or
+a `RecursiveDirectoryIterator`. See [SPL Iterators](http://php.net/manual/en/spl.iterators.php).
 
 #### Class loader
 
-The `Jasny\Container\ClassLoader` is an alternative to the entry loader, to create entries based on a list of classes.
-The loader takes an `Iterator` with fully qualified classnames (FQCNs).
+The `ClassLoader` is an alternative to the entry loader, to create entries based on a list of classes. The loader takes
+an `Iterator` with fully qualified classnames (FQCNs).
 
 ```php
 use Jasny\Container\Container;
@@ -164,7 +172,7 @@ This can be done with `FQCNIterator` from [jasny/fqcn-reader](https://github.com
 
 ```php
 use Jasny\Container\Container;
-use Jasny\Container\ClassLoader;
+use Jasny\Container\Loader\ClassLoader;
 use Jasny\FQCN\FQCNIterator;
 
 $directoryIterator = new \RecursiveDirectoryIterator('path/to/project/services');
