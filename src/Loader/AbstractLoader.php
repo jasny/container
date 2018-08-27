@@ -15,7 +15,7 @@ abstract class AbstractLoader implements \OuterIterator
     protected $items;
 
     /**
-     * @var \ArrayIterator
+     * @var \ArrayIterator|null
      */
     protected $entries;
 
@@ -41,11 +41,11 @@ abstract class AbstractLoader implements \OuterIterator
     /**
      * Return the current element
      *
-     * @return callable
+     * @return callable|null
      */
-    public function current(): callable
+    public function current(): ?callable
     {
-        return $this->entries->current();
+        return isset($this->entries) ? $this->entries->current() : null;
     }
 
     /**
@@ -55,6 +55,11 @@ abstract class AbstractLoader implements \OuterIterator
      */
     public function next(): void
     {
+        if (!isset($this->entries)) {
+            // Shouldn't happen if `prepareNext()` works correctly
+            return; // @codeCoverageIgnore
+        }
+
         $this->entries->next();
 
         while (!$this->entries->valid() && $this->items->valid()) {
@@ -69,7 +74,7 @@ abstract class AbstractLoader implements \OuterIterator
      */
     public function key(): ?string
     {
-        return $this->entries->key();
+        return isset($this->entries) ? $this->entries->key() : null;
     }
 
     /**

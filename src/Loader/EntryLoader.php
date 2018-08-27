@@ -25,8 +25,12 @@ class EntryLoader extends AbstractLoader
         $file = $this->items->current();
 
         $entries = include $file;
-        expect_type($entries, 'array', \UnexpectedValueException::class,
-            "Failed to load container entries from '$file': Invalid or no return value");
+        expect_type(
+            $entries,
+            'array',
+            \UnexpectedValueException::class,
+            "Failed to load container entries from '$file': Invalid or no return value"
+        );
 
         $this->entries = new \ArrayIterator($entries);
 

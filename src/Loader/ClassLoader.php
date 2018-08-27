@@ -48,8 +48,12 @@ class ClassLoader extends AbstractLoader
         $class = $this->items->current();
         $entries = call_user_func($this->apply, $class);
 
-        expect_type($entries, 'array', \UnexpectedValueException::class,
-            "Failed to load container entries for '$class': Expected array, callback returned %s");
+        expect_type(
+            $entries,
+            'array',
+            \UnexpectedValueException::class,
+            "Failed to load container entries for '$class': Expected array, callback returned %s"
+        );
 
         $this->entries = new \ArrayIterator($entries);
 
