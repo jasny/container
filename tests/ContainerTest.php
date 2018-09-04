@@ -149,6 +149,25 @@ class ContainerTest extends TestCase
         $this->assertSame($foo, $result);
     }
 
+    public function testAutowireParams()
+    {
+        $foo = new \stdClass();
+
+        $autowire = $this->createMock(AutowireInterface::class);
+        $autowire->expects($this->once())->method('instantiate')
+            ->with('Foo', 'one', 'two')->willReturn($foo);
+
+        $container = new Container([
+            AutowireInterface::class => function() use ($autowire) {
+                return $autowire;
+            }
+        ]);
+
+        $result = $container->autowire('Foo', 'one', 'two');
+
+        $this->assertSame($foo, $result);
+    }
+
     /**
      * @expectedException \Jasny\Container\Exception\NotFoundException
      */

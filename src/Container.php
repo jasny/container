@@ -15,7 +15,7 @@ use function Jasny\expect_type;
  * This class is a minimalist dependency injection container.
  * It has compatibility with container-interop's ContainerInterface and delegate-lookup feature.
  */
-class Container implements InteropContainer
+class Container implements InteropContainer, AutowireContainerInterface
 {
     /**
      * The delegate lookup.
@@ -140,10 +140,11 @@ class Container implements InteropContainer
      * Instantiate a new object, autowire dependencies.
      *
      * @param string $class
+     * @param mixed  ...$params
      * @return object
      */
-    public function autowire(string $class)
+    public function autowire(string $class, ...$params)
     {
-        return $this->get('Jasny\Autowire\AutowireInterface')->instantiate($class);
+        return $this->get('Jasny\Autowire\AutowireInterface')->instantiate($class, ...$params);
     }
 }
