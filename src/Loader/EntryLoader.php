@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Jasny\Container\Loader;
 
@@ -24,13 +22,11 @@ class EntryLoader extends AbstractLoader
 
         $file = $this->items->current();
 
+        /** @noinspection PhpIncludeInspection */
         $entries = include $file;
-        expect_type(
-            $entries,
-            'array',
-            \UnexpectedValueException::class,
-            "Failed to load container entries from '$file': Invalid or no return value"
-        );
+
+        $err = "Failed to load container entries from '$file': Invalid or no return value";
+        expect_type($entries, 'array', \UnexpectedValueException::class, $err);
 
         $this->entries = new \ArrayIterator($entries);
 

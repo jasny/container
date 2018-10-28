@@ -206,7 +206,7 @@ application dependencies are done on abstractions rather than implementations.
 
 ### Subcontainers
 
-Entries of the container may also be a container themselves. In this case, you can use the `entry:subentry` to get an
+Entries of the container may also be a container themselves. In this case, you can use the `entry.subentry` to get an
 entry from the subcontainer. The subcontainer needs to implement `Psr\Container\ContainerInterface`, it doesn't need to
 be a `Jasny\Container` object.
 
@@ -224,8 +224,12 @@ $container = new Container([
     }
 ]);
 
-$secret = $container->get('config:secret');
-``` 
+$secret = $container->get('config.secret');
+```
+
+If the container contains a `config.secret` entry, the `config` container is not consulted. A multiple levels are used
+like `config.db.settings.host`, the container tries finding the an entry in the following order;
+`config.db.settings.host`, `config.db.settings`, `config.db`, `config`.
 
 ### Autowiring
 

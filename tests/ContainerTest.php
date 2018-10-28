@@ -81,7 +81,7 @@ class ContainerTest extends TestCase
             "instance" => function () { return "nop"; }
         ]);
 
-        $result = $container->get('sub:instance');
+        $result = $container->get('sub.instance');
         $this->assertEquals("value", $result);
     }
 
@@ -94,7 +94,7 @@ class ContainerTest extends TestCase
             "sub" => function () { return "value"; }
         ]);
 
-        $container->get('sub:instance');
+        $container->get('sub.instance');
     }
 
     public function testHasSub()
@@ -108,11 +108,26 @@ class ContainerTest extends TestCase
             "instance" => function () { return "nop"; }
         ]);
 
-        $this->assertTrue($container->has('sub:instance'));
+        $this->assertTrue($container->has('sub.instance'));
 
-        $this->assertFalse($container->has('sub:non_existing'));
-        $this->assertFalse($container->has('instance:foo'));
-        $this->assertFalse($container->has('foo:instance'));
+        $this->assertFalse($container->has('sub.non_existing'));
+        $this->assertFalse($container->has('instance.foo'));
+        $this->assertFalse($container->has('foo.instance'));
+    }
+
+    public function testHasDeepSub()
+    {
+        $subContainer = new Container([
+            "d1.d2.instance" => function() { return "value"; }
+        ]);
+
+        $container = new Container([
+            "sub.u1.u2" => function () use ($subContainer) { return $subContainer; },
+        ]);
+
+        $this->assertTrue($container->has('sub.u1.u2.d1.d2.instance'));
+
+        $this->assertFalse($container->has('sub.u1.u2.d1'));
     }
 
 

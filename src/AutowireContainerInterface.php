@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Jasny\Container;
 
@@ -15,7 +13,8 @@ interface AutowireContainerInterface extends ContainerInterface
      * Instantiate a new object, autowire dependencies.
      *
      * @param string $class
+     * @param mixed  ...$args
      * @return object
      */
-    public function autowire(string $class);
+    public function autowire(string $class, ...$args);
 }

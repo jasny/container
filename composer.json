@@ -47,10 +47,9 @@
     },
     "scripts": {
         "test": [
+            "phpstan analyse",
             "phpunit",
-            "phpcloc cloc src",
-            "phpcs -p src",
-            "phpstan analyse"
+            "phpcs -p src"
         ]
     },
     "scripts-descriptions": {
