@@ -132,7 +132,20 @@ class ContainerTest extends TestCase
 
 
     /**
-     * @expectedException \PHPUnit\Framework\Error\Notice
+     * @expectedException \TypeError
+     * @expectedExceptionMessage Entry is a DateTime object, which does not implement Jasny\Container\Container
+     */
+    public function testGetClassMismatch()
+    {
+        $container = new Container([
+            Container::class => function () { return new \DateTime(); }
+        ]);
+
+        $container->get(Container::class);
+    }
+
+    /**
+     * @expectedException \TypeError
      * @expectedExceptionMessage Entry is a DateTime object, which does not implement Psr\Container\ContainerInterface
      */
     public function testGetInterfaceMismatch()

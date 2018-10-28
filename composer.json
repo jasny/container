@@ -24,6 +24,7 @@
     },
     "require": {
         "php": ">=7.1.0",
+        "ext-ctype": "*",
         "container-interop/container-interop": "~1.2",
         "psr/container": "^1.0",
         "jasny/php-functions": "^2.3|^3.1"

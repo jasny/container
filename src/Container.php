@@ -71,16 +71,59 @@ class Container implements InteropContainer, AutowireContainerInterface
         }
 
         $instance = $this->callbacks[$identifier]($this->delegateLookupContainer);
-
-        if (interface_exists($identifier) && !is_a($instance, $identifier)) {
-            $type = (is_object($instance) ? get_class($instance) . ' ' : '') . gettype($instance);
-            trigger_error("Entry is a $type, which does not implement $identifier", E_USER_NOTICE);
-        }
+        $this->assertType($instance, $identifier);
 
         $this->instances[$identifier] = $instance;
 
         return $instance;
     }
+
+    /**
+     * Check if the container has an entry.
+     *
+     * @param string $identifier
+     * @return bool
+     */
+    public function has($identifier): bool
+    {
+        expect_type($identifier, 'string');
+
+        return isset($this->callbacks[$identifier]) || $this->hasSub($identifier);
+    }
+
+    /**
+     * Instantiate a new object, autowire dependencies.
+     *
+     * @param string $class
+     * @param mixed  ...$args
+     * @return object
+     */
+    public function autowire(string $class, ...$args)
+    {
+        return $this->get('Jasny\Autowire\AutowireInterface')->instantiate($class, ...$args);
+    }
+
+
+    /**
+     * Check the type of the instance if the identifier is an interface or class name.
+     *
+     * @param mixed  $instance
+     * @param string $identifier
+     * @throws \TypeError
+     */
+    protected function assertType($instance, string $identifier): void
+    {
+        if (
+            ctype_upper($identifier[0]) &&
+            strpos($identifier, '.') === false &&
+            (class_exists($identifier) || interface_exists($identifier)) &&
+            !is_a($instance, $identifier)
+        ) {
+            $type = (is_object($instance) ? get_class($instance) . ' ' : '') . gettype($instance);
+            throw new \TypeError("Entry is a $type, which does not implement $identifier");
+        }
+    }
+
 
     /**
      * Get an instance from a subcontainer.
@@ -103,20 +146,6 @@ class Container implements InteropContainer, AutowireContainerInterface
 
 
         return $subcontainer->get($subId);
-    }
-
-
-    /**
-     * Check if the container has an entry.
-     *
-     * @param string $identifier
-     * @return bool
-     */
-    public function has($identifier): bool
-    {
-        expect_type($identifier, 'string');
-
-        return isset($this->callbacks[$identifier]) || $this->hasSub($identifier);
     }
 
     /**
@@ -156,18 +185,5 @@ class Container implements InteropContainer, AutowireContainerInterface
         }
 
         return isset($subcontainer) ? [$subcontainer, $containerId, join('.', $subParts)] : [null, null, null];
-    }
-
-
-    /**
-     * Instantiate a new object, autowire dependencies.
-     *
-     * @param string $class
-     * @param mixed  ...$args
-     * @return object
-     */
-    public function autowire(string $class, ...$args)
-    {
-        return $this->get('Jasny\Autowire\AutowireInterface')->instantiate($class, ...$args);
     }
 }

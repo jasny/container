@@ -35,12 +35,6 @@ resort to using the global scope via a Service Locator, Facade or Singleton. **D
 much harder to test, maintain and reuse. Instead resolve the nesting by creating an abstract factory for the nested
 object and inject the service into the factory.
 
-##### Compared to PHP-DI
-[PHP-DI](https://php-di.com) is the cream of the crop when it comes to dependency injection in PHP. However using it can
-make your application feel too magical, resulting in unexpected behaviour and problems when debugging.
-
-Jasny Container does a lot less, but can be used to accomplish the same, giving you more control over your application.
-
 _This library is based on [Picontainer](https://github.com/thecodingmachine/picotainer)._
 
 Installation
@@ -83,8 +77,8 @@ $container = new Container([
 
 The list of entries is an associative array. The order of entries doesn't matter.
 
-- The key is the name of the entry in the container
-- The value is an **anonymous function** that will return the entry
+- The key is the name of the entry in the container.
+- The value is an **anonymous function** (Closure) that will return the entry.
 
 The entry can be anything (an object, a scalar value, a resource, etc...) The anonymous function must accept one
 parameter: the container on which dependencies will be fetched.
@@ -200,9 +194,26 @@ the container, a `Jasny\Container\NotFoundException` is thrown.
 
 ### Type checking
 
-If the entry identifier is an interface name, a notice is triggered if the entry doesn't implement the interface. This
-is only done for interfaces. The container doesn't check class hierarchy. Please use interfaces where possible, so the
-application dependencies are done on abstractions rather than implementations.
+If the entry identifier is an interface or class name, a `TypeError` is thrown if the entry doesn't implement the
+interface or extend the class.
+
+Any identifier that starts with a capital and doesn't contain a `.` is seen a potential interface or class name, this is
+checked with `class_exists`.
+
+```php
+// No type checking is done
+$container->get('foo'); 
+$container->get('datetime');
+$container->get('My.thing');
+
+// No checking is done because class doesn't exist
+$container->get('FooBar');
+
+// Checking is done
+$container->get('Psr\Http\Message\ServerRequestInterface');
+```
+
+It's recommended to keep non-class/interface identifiers lowercase.
 
 ### Subcontainers
 
