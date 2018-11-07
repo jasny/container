@@ -284,3 +284,9 @@ _Pro tip:_ Rather than using the `has` method, create a
 but does nothing. For example a `NoCache` object that doesn't actually cache values. Removing the `if` statements
 reduces complexity. The function calls are typically not more expensive than the if statement, so it doesn't hurt
 performance.
+
+## Notes for the reader
+
+If you're using the PHPStorm IDE, install the
+[dynamic return type plugin](https://plugins.jetbrains.com/plugin/7251-dynamicreturntypeplugin) to get the correct
+type hint when doing `$container->get(SomeInterface::class)`.

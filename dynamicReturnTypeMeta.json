@@ -1,0 +1,9 @@
+{
+    "methodCalls": [
+        {
+            "class": "\\Psr\\Container\\ContainerInterface",
+            "method": "get",
+            "position": 0
+        }
+    ]
+}
