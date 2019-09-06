@@ -1,8 +1,9 @@
 language: php
 
 php:
-  - 7.1
   - 7.2
+  - 7.3
+  - 7.4snapshot
   - nightly
 
 matrix:
@@ -20,15 +21,17 @@ branches:
     - master
 
 before_install:
-  - composer self-update
+  - test "$TRAVIS_PHP_VERSION" != "nightly" || export COMPOSER_FLAGS="$COMPOSER_FLAGS --ignore-platform-reqs"
 
 install:
   - composer install --prefer-source $COMPOSER_FLAGS
   - wget https://scrutinizer-ci.com/ocular.phar -O "$HOME/ocular.phar"
-  
+
+before_script:
+  - test "$TRAVIS_ALLOW_FAILURE" == "true" || export PHPUNIT_FLAGS="--coverage-clover cache/logs/clover.xml"
+
 script:
-  - vendor/bin/phpunit --coverage-clover cache/logs/clover.xml
+  - vendor/bin/phpunit $PHPUNIT_FLAGS
 
-after_success:
-  - php "$HOME/ocular.phar" code-coverage:upload --format=php-clover cache/logs/clover.xml
-
+after_script:
+  - test "$TRAVIS_ALLOW_FAILURE" == "true" || php "$HOME/ocular.phar" code-coverage:upload --format=php-clover cache/logs/clover.xml
