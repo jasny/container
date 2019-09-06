@@ -41,12 +41,12 @@ class Container implements InteropContainer, AutowireContainerInterface
     /**
      * Class constructor
      *
-     * @param iterable<\Closure> $entries                 Entries must be passed as an array of anonymous functions.
+     * @param \Traversable<\Closure>|\Closure[] $entries Entries must be passed as an array of anonymous functions.
      * @param ContainerInterface $delegateLookupContainer Optional delegate lookup container.
      */
     public function __construct(iterable $entries, ContainerInterface $delegateLookupContainer = null)
     {
-        $this->callbacks = $entries instanceof \Traversable ? iterator_to_array($entries) : $entries;
+        $this->callbacks = is_array($entries) ? $entries : iterator_to_array($entries);
         $this->delegateLookupContainer = $delegateLookupContainer ?: $this;
     }
 
