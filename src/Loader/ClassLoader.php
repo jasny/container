@@ -2,9 +2,9 @@
 
 namespace Jasny\Container\Loader;
 
+use Improved as i;
 use Jasny\Container\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
-use function Jasny\expect_type;
 
 /**
  * Load entries from class.
@@ -44,13 +44,12 @@ class ClassLoader extends AbstractLoader
         }
 
         $class = $this->items->current();
-        $entries = call_user_func($this->apply, $class);
 
-        expect_type(
-            $entries,
+        $entries = i\type_check(
+            call_user_func($this->apply, $class),
             'array',
-            \UnexpectedValueException::class,
-            "Failed to load container entries for '$class': Expected array, callback returned %s"
+            new \UnexpectedValueException("Failed to load container entries for '$class': "
+                . "Expected array, callback returned %s")
         );
 
         $this->entries = new \ArrayIterator($entries);

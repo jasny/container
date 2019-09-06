@@ -140,7 +140,7 @@ class ClassLoaderTest extends TestCase
     {
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage("Failed to load container entries for 'Foo': Expected array, "
-            . "callback returned Closure object");
+            . "callback returned instance of Closure");
 
         $apply = function () {
             return function() {};

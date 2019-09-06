@@ -2,13 +2,12 @@
 
 namespace Jasny\Container;
 
+use Improved as i;
 use Interop\Container\ContainerInterface as InteropContainer;
 use Jasny\Container\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
 use Jasny\Container\Exception\NotFoundException;
 use Jasny\Container\Exception\NoSubContainerException;
-
-use function Jasny\expect_type;
 
 /**
  * This class is a minimalist dependency injection container.
@@ -61,7 +60,7 @@ class Container implements InteropContainer, AutowireContainerInterface
      */
     public function get($identifier)
     {
-        expect_type($identifier, 'string');
+        i\type_check($identifier, 'string');
 
         if (array_key_exists($identifier, $this->instances)) {
             return $this->instances[$identifier];
@@ -89,7 +88,7 @@ class Container implements InteropContainer, AutowireContainerInterface
      */
     public function has($identifier): bool
     {
-        expect_type($identifier, 'string');
+        i\type_check($identifier, 'string');
 
         return isset($this->callbacks[$identifier]) || $this->hasSub($identifier);
     }
