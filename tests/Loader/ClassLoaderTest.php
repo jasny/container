@@ -2,7 +2,7 @@
 
 namespace Jasny\Container\Tests\Loader;
 
-use Jasny\Autowire\AutowireInterface;
+use Jasny\Container\Autowire\AutowireInterface;
 use Jasny\Container\Loader\ClassLoader;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -26,13 +26,13 @@ class ClassLoaderTest extends TestCase
             ->withConsecutive(['Foo'], ['Bar'], ['App\Qux'])->willReturnOnConsecutiveCalls($foo, $bar, $qux);
 
         $container = $this->createMock(ContainerInterface::class);
-        $container->expects($this->any())->method('get')->with('Jasny\Autowire\AutowireInterface')
+        $container->expects($this->any())->method('get')->with(AutowireInterface::class)
             ->willReturn($autowire);
 
         $result = [];
 
         foreach ($entries as $class => $callback) {
-            $this->assertInternalType('string', $class);
+            $this->assertIsString($class);
             $this->assertInstanceOf(\Closure::class, $callback);
 
             $result[$class] = $callback($container);
@@ -55,7 +55,7 @@ class ClassLoaderTest extends TestCase
         $result = [];
 
         foreach ($entries as $class => $callback) {
-            $this->assertInternalType('string', $class);
+            $this->assertIsString($class);
             $this->assertInstanceOf(\Closure::class, $callback);
 
             $result[$class] = $callback();
@@ -82,7 +82,7 @@ class ClassLoaderTest extends TestCase
         $result = [];
 
         foreach ($entries as $class => $callback) {
-            $this->assertInternalType('string', $class);
+            $this->assertIsString($class);
             $this->assertInstanceOf(\Closure::class, $callback);
 
             $result[$class] = $callback();
@@ -136,12 +136,12 @@ class ClassLoaderTest extends TestCase
         $this->assertEquals(['Foo.one', 'Foo.two', 'Bar.one', 'Bar.two'], array_keys($second));
     }
 
-    /**
-     * @expectedException \UnexpectedValueException
-     * @expectedExceptionMessage Failed to load container entries for 'Foo': Expected array, callback returned Closure object
-     */
     public function testIterateUnexpectedValue()
     {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage("Failed to load container entries for 'Foo': Expected array, "
+            . "callback returned Closure object");
+
         $apply = function () {
             return function() {};
         };

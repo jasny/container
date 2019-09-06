@@ -23,7 +23,7 @@
         "source": "https://github.com/jasny/container"
     },
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.2.0",
         "ext-ctype": "*",
         "container-interop/container-interop": "~1.2",
         "psr/container": "^1.0",
@@ -31,7 +31,7 @@
     },
     "require-dev": {
         "jasny/php-code-quality": "^2.3",
-        "jasny/autowire": "^1.1"
+        "jasny/reflection-factory": "^1.1"
     },
     "suggest": {
         "jasny/autowire": "Automatically determine the dependencies when instantiating a class"

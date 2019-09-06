@@ -2,8 +2,8 @@
 
 namespace Jasny\Container\Loader;
 
+use Jasny\Container\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
-
 use function Jasny\expect_type;
 
 /**
@@ -68,7 +68,7 @@ class ClassLoader extends AbstractLoader
     {
         return [
             $class => function (ContainerInterface $container) use ($class) {
-                return $container->get('Jasny\Autowire\AutowireInterface')->instantiate($class);
+                return $container->get(AutowireInterface::class)->instantiate($class);
             }
         ];
     }

@@ -3,12 +3,12 @@
 namespace Jasny\Container;
 
 use Interop\Container\ContainerInterface as InteropContainer;
-use Psr\Container\ContainerInterface as Psr11Container;
+use Jasny\Container\Autowire\AutowireInterface;
+use Psr\Container\ContainerInterface;
 use Jasny\Container\Exception\NotFoundException;
 use Jasny\Container\Exception\NoSubContainerException;
 
 use function Jasny\expect_type;
-use Psr\Container\ContainerInterface;
 
 /**
  * This class is a minimalist dependency injection container.
@@ -19,7 +19,7 @@ class Container implements InteropContainer, AutowireContainerInterface
     /**
      * The delegate lookup.
      *
-     * @var Psr11Container
+     * @var ContainerInterface
      */
     protected $delegateLookupContainer;
 
@@ -42,9 +42,9 @@ class Container implements InteropContainer, AutowireContainerInterface
      * Class constructor
      *
      * @param iterable<\Closure> $entries                 Entries must be passed as an array of anonymous functions.
-     * @param Psr11Container     $delegateLookupContainer Optional delegate lookup container.
+     * @param ContainerInterface $delegateLookupContainer Optional delegate lookup container.
      */
-    public function __construct(iterable $entries, Psr11Container $delegateLookupContainer = null)
+    public function __construct(iterable $entries, ContainerInterface $delegateLookupContainer = null)
     {
         $this->callbacks = $entries instanceof \Traversable ? iterator_to_array($entries) : $entries;
         $this->delegateLookupContainer = $delegateLookupContainer ?: $this;
@@ -56,7 +56,8 @@ class Container implements InteropContainer, AutowireContainerInterface
      *
      * @param string $identifier
      * @return mixed
-     * @throws NotFoundException  if entry isn't defined
+     * @throws NotFoundException
+     * @throws NoSubContainerException
      */
     public function get($identifier)
     {
@@ -83,6 +84,8 @@ class Container implements InteropContainer, AutowireContainerInterface
      *
      * @param string $identifier
      * @return bool
+     * @throws NotFoundException
+     * @throws NoSubContainerException
      */
     public function has($identifier): bool
     {
@@ -95,12 +98,14 @@ class Container implements InteropContainer, AutowireContainerInterface
      * Instantiate a new object, autowire dependencies.
      *
      * @param string $class
-     * @param mixed  ...$args
+     * @param mixed ...$args
      * @return object
+     * @throws NotFoundException
+     * @throws NoSubContainerException
      */
     public function autowire(string $class, ...$args)
     {
-        return $this->get('Jasny\Autowire\AutowireInterface')->instantiate($class, ...$args);
+        return $this->get(AutowireInterface::class)->instantiate($class, ...$args);
     }
 
 
@@ -113,8 +118,7 @@ class Container implements InteropContainer, AutowireContainerInterface
      */
     protected function assertType($instance, string $identifier): void
     {
-        if (
-            ctype_upper($identifier[0]) &&
+        if (ctype_upper($identifier[0]) &&
             strpos($identifier, '.') === false &&
             (class_exists($identifier) || interface_exists($identifier)) &&
             !is_a($instance, $identifier)
@@ -131,10 +135,11 @@ class Container implements InteropContainer, AutowireContainerInterface
      * @param string $identifier
      * @return mixed
      * @throws NotFoundException
+     * @throws NoSubContainerException
      */
     protected function getSub(string $identifier)
     {
-        [$subcontainer, $containerId, $subId] = $this->findSubcontainer($identifier);
+        [$subcontainer, $containerId, $subId] = $this->findSubContainer($identifier);
 
         if (!isset($subcontainer)) {
             throw new NotFoundException("Entry \"$identifier\" is not defined.");
@@ -144,7 +149,6 @@ class Container implements InteropContainer, AutowireContainerInterface
             throw new NoSubContainerException("Entry \"$containerId\" is not a PSR-11 compatible container");
         }
 
-
         return $subcontainer->get($subId);
     }
 
@@ -153,10 +157,12 @@ class Container implements InteropContainer, AutowireContainerInterface
      *
      * @param string $identifier
      * @return bool
+     * @throws NotFoundException
+     * @throws NoSubContainerException
      */
     protected function hasSub(string $identifier): bool
     {
-        [$subcontainer, , $subId] = $this->findSubcontainer($identifier);
+        [$subcontainer, , $subId] = $this->findSubContainer($identifier);
 
         return isset($subcontainer) && $subcontainer instanceof ContainerInterface && $subcontainer->has($subId);
     }
@@ -165,9 +171,11 @@ class Container implements InteropContainer, AutowireContainerInterface
      * Find an subcontainer iterating through the identifier parts.
      *
      * @param string $identifier
-     * @return array  [subcontainer, subidentifier]
+     * @return array  [subcontainer, container id, subidentifier]
+     * @throws NotFoundException
+     * @throws NoSubContainerException
      */
-    protected function findSubcontainer(string $identifier): array
+    protected function findSubContainer(string $identifier): array
     {
         $containerId = null;
         $subcontainer = null;

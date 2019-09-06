@@ -14,7 +14,7 @@ class EntryLoaderTest extends TestCase
 {
     protected $root;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->root = vfsStream::setup();
         vfsStream::create([
@@ -35,7 +35,7 @@ class EntryLoaderTest extends TestCase
         $result = [];
 
         foreach ($entries as $key => $callback) {
-            $this->assertInternalType('string', $key);
+            $this->assertIsString($key);
             $this->assertInstanceOf(\Closure::class, $callback);
 
             $result[$key] = $callback();
@@ -52,7 +52,7 @@ class EntryLoaderTest extends TestCase
         $result = [];
 
         foreach ($entries as $key => $callback) {
-            $this->assertInternalType('string', $key);
+            $this->assertIsString($key);
             $this->assertInstanceOf(\Closure::class, $callback);
 
             $result[$key] = $callback();
@@ -69,7 +69,7 @@ class EntryLoaderTest extends TestCase
         $result = [];
 
         foreach ($entries as $key => $callback) {
-            $this->assertInternalType('string', $key);
+            $this->assertIsString($key);
             $this->assertInstanceOf(\Closure::class, $callback);
 
             $result[$key] = $callback();
@@ -111,12 +111,12 @@ class EntryLoaderTest extends TestCase
         $this->assertEquals(['red', 'green', 'blue'], array_keys($second));
     }
 
-    /**
-     * @expectedException \UnexpectedValueException
-     * @expectedExceptionMessage Failed to load container entries from 'vfs://root/blank.php': Invalid or no return value
-     */
     public function testIterateUnexpectedValue()
     {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage("Failed to load container entries from 'vfs://root/blank.php': "
+            . "Invalid or no return value");
+
         $iterator = new \ArrayIterator(['vfs://root/r.php', 'vfs://root/blank.php', 'vfs://root/g.php']);
         $entries = new EntryLoader($iterator);
 

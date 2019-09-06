@@ -2,8 +2,10 @@
 
 namespace Jasny\Container\Tests;
 
-use Jasny\Autowire\AutowireInterface;
+use Jasny\Container\Autowire\AutowireInterface;
 use Jasny\Container\Container;
+use Jasny\Container\Exception\NoSubContainerException;
+use Jasny\Container\Exception\NotFoundException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
@@ -24,13 +26,11 @@ class ContainerTest extends TestCase
         $this->assertSame('value', $container->get('instance'));
     }
 
-    /**
-     * @expectedException \Jasny\Container\Exception\NotFoundException
-     */
     public function testGetNotFound()
     {
-        $container = new Container([]);
+        $this->expectException(NotFoundException::class);
 
+        $container = new Container([]);
         $container->get('nonexistant');
     }
 
@@ -85,11 +85,10 @@ class ContainerTest extends TestCase
         $this->assertEquals("value", $result);
     }
 
-    /**
-     * @expectedException \Jasny\Container\Exception\NoSubContainerException
-     */
     public function testGetSubInvalid()
     {
+        $this->expectException(NoSubContainerException::class);
+
         $container = new Container([
             "sub" => function () { return "value"; }
         ]);
@@ -131,12 +130,11 @@ class ContainerTest extends TestCase
     }
 
 
-    /**
-     * @expectedException \TypeError
-     * @expectedExceptionMessage Entry is a DateTime object, which does not implement Jasny\Container\Container
-     */
     public function testGetClassMismatch()
     {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage("Entry is a DateTime object, which does not implement Jasny\Container\Container");
+
         $container = new Container([
             Container::class => function () { return new \DateTime(); }
         ]);
@@ -144,12 +142,12 @@ class ContainerTest extends TestCase
         $container->get(Container::class);
     }
 
-    /**
-     * @expectedException \TypeError
-     * @expectedExceptionMessage Entry is a DateTime object, which does not implement Psr\Container\ContainerInterface
-     */
     public function testGetInterfaceMismatch()
     {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage("Entry is a DateTime object, which does not implement "
+            . "Psr\Container\ContainerInterface");
+
         $container = new Container([
             ContainerInterface::class => function () { return new \DateTime(); }
         ]);
@@ -196,11 +194,10 @@ class ContainerTest extends TestCase
         $this->assertSame($foo, $result);
     }
 
-    /**
-     * @expectedException \Jasny\Container\Exception\NotFoundException
-     */
     public function testAutowireNotFound()
     {
+        $this->expectException(NotFoundException::class);
+
         $container = new Container([]);
         $container->autowire('Foo');
     }
