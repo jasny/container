@@ -28,7 +28,7 @@ install:
   - wget https://scrutinizer-ci.com/ocular.phar -O "$HOME/ocular.phar"
 
 before_script: |
-  if test "$TRAVIS_ALLOW_FAILURE" == "false"; then
+  if (php -m | grep -q -i xdebug); then
     export PHPUNIT_FLAGS="--coverage-clover cache/logs/clover.xml"
   else
     export PHPUNIT_FLAGS="--no-coverage"
