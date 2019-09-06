@@ -212,6 +212,22 @@ DOC_COMMENT;
         $this->assertSame($foo, $result);
     }
 
+    public function testInstantiateUnknownClass()
+    {
+        $this->expectException(AutowireException::class);
+        $this->expectExceptionMessage("Unable to autowire Foo: Class Foo does not exist");
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects($this->never())->method('get');
+
+        $reflection = $this->createMock(ReflectionFactoryInterface::class);
+        $reflection->expects($this->once())->method('reflectClass')->with('Foo')
+            ->willThrowException(new \ReflectionException("Class Foo does not exist"));
+
+        $autowire = new ReflectionAutowire($container, $reflection);
+        $autowire->instantiate('Foo');
+    }
+
     public function testInstantiateUnknownType()
     {
         $this->expectException(AutowireException::class);
@@ -234,7 +250,7 @@ DOC_COMMENT;
     {
         $this->expectException(AutowireException::class);
         $this->expectExceptionMessage("Build-in type 'string' for parameter 'hue' can't be used as container id. "
-            . "Please use annotations.");
+            . "Please specify via @param");
 
         $container = $this->createMock(ContainerInterface::class);
         $container->expects($this->never())->method('get');

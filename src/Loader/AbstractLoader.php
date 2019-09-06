@@ -72,7 +72,7 @@ abstract class AbstractLoader implements \OuterIterator
      */
     public function key(): ?string
     {
-        return isset($this->entries) ? $this->entries->key() : null;
+        return isset($this->entries) ? (string)$this->entries->key() : null;
     }
 
     /**

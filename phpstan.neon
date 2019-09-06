@@ -1,10 +1,10 @@
 parameters:
-  level: 4
+  level: 7
   paths:
     - src
   ignoreErrors:
     - "/Parameter #1 \\$identifier \\(string\\) of method Jasny\\\\Container\\\\Container\\:\\:\\w+\\(\\) should be contravariant with parameter \\$id \\(mixed\\) of method Psr\\\\Container\\\\ContainerInterface\\:\\:\\w+\\(\\)/"
+  reportUnmatchedIgnoredErrors: false
 includes:
   - vendor/phpstan/phpstan-strict-rules/rules.neon
-
 
