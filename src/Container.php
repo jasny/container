@@ -40,15 +40,35 @@ class Container implements InteropContainer, AutowireContainerInterface
     /**
      * Class constructor
      *
-     * @param \Traversable<\Closure>|\Closure[] $entries  Entries must be passed as an array of anonymous functions.
-     * @param ContainerInterface|null $delegateLookup     Optional delegate lookup container.
+     * @param iterable<\Closure&callable(ContainerInterface)> $entries
+     * @param ContainerInterface|null                         $delegateLookup
      */
     public function __construct(iterable $entries, ?ContainerInterface $delegateLookup = null)
     {
+        /** @var array|\Traversable $entries */
         $this->callbacks = is_array($entries) ? $entries : iterator_to_array($entries);
         $this->delegateLookupContainer = $delegateLookup ?: $this;
     }
 
+    /**
+     * Get a copy with added or replaced entries.
+     *
+     * @param iterable<\Closure&callable(ContainerInterface)> $entries
+     * @return static
+     */
+    public function with(iterable $entries): self
+    {
+        $copy = clone $this;
+        $copy->instances = [];
+
+        /** @var array|\Traversable $entries */
+        $copy->callbacks = array_merge(
+            $this->callbacks,
+            is_array($entries) ? $entries : iterator_to_array($entries)
+        );
+
+        return $copy;
+    }
 
     /**
      * Get an instance from the container.
@@ -57,6 +77,10 @@ class Container implements InteropContainer, AutowireContainerInterface
      * @return mixed
      * @throws NotFoundException
      * @throws NoSubContainerException
+     *
+     * @template T
+     * @phpstan-param class-string<T>|string
+     * @phpstand-return T|mixed
      */
     public function get($identifier)
     {
