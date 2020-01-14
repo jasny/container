@@ -1,11 +1,9 @@
 {
     "name": "jasny/container",
     "type": "library",
-    "description": "Simple dependency injection container compatible with container-interop",
+    "description": "Simple dependency injection container with autowire support",
     "keywords": [
         "dependency injection",
-        "DI",
-        "container-interop",
         "container",
         "PSR-11"
     ],
@@ -25,13 +23,12 @@
     "require": {
         "php": ">=7.2.0",
         "ext-ctype": "*",
-        "container-interop/container-interop": "~1.2",
         "improved/type": "^0.1.1",
+        "jasny/autowire": "^1.2",
         "psr/container": "^1.0"
     },
     "require-dev": {
-        "jasny/php-code-quality": "^2.3",
-        "jasny/reflection-factory": "^1.1"
+        "jasny/php-code-quality": "^2.3"
     },
     "suggest": {
         "jasny/autowire": "Automatically determine the dependencies when instantiating a class"

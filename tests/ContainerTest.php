@@ -2,7 +2,7 @@
 
 namespace Jasny\Container\Tests;
 
-use Jasny\Container\Autowire\AutowireInterface;
+use Jasny\Autowire\AutowireInterface;
 use Jasny\Container\Container;
 use Jasny\Container\Exception\NoSubContainerException;
 use Jasny\Container\Exception\NotFoundException;

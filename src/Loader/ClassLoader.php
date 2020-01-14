@@ -3,7 +3,7 @@
 namespace Jasny\Container\Loader;
 
 use Improved as i;
-use Jasny\Container\Autowire\AutowireInterface;
+use Jasny\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
 
 /**

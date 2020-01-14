@@ -2,7 +2,7 @@
 
 namespace Jasny\Container\Tests\Loader;
 
-use Jasny\Container\Autowire\AutowireInterface;
+use Jasny\Autowire\AutowireInterface;
 use Jasny\Container\Loader\ClassLoader;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;

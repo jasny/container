@@ -4,7 +4,7 @@ namespace Jasny\Container;
 
 use Improved as i;
 use Interop\Container\ContainerInterface as InteropContainer;
-use Jasny\Container\Autowire\AutowireInterface;
+use Jasny\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
 use Jasny\Container\Exception\NotFoundException;
 use Jasny\Container\Exception\NoSubContainerException;
@@ -40,13 +40,13 @@ class Container implements InteropContainer, AutowireContainerInterface
     /**
      * Class constructor
      *
-     * @param \Traversable<\Closure>|\Closure[] $entries Entries must be passed as an array of anonymous functions.
-     * @param ContainerInterface $delegateLookupContainer Optional delegate lookup container.
+     * @param \Traversable<\Closure>|\Closure[] $entries  Entries must be passed as an array of anonymous functions.
+     * @param ContainerInterface|null $delegateLookup     Optional delegate lookup container.
      */
-    public function __construct(iterable $entries, ContainerInterface $delegateLookupContainer = null)
+    public function __construct(iterable $entries, ?ContainerInterface $delegateLookup = null)
     {
         $this->callbacks = is_array($entries) ? $entries : iterator_to_array($entries);
-        $this->delegateLookupContainer = $delegateLookupContainer ?: $this;
+        $this->delegateLookupContainer = $delegateLookup ?: $this;
     }
 
 
