@@ -269,6 +269,7 @@ To use autowiring, add a `Jasny\Autowire\AutowireInterface` entry to the contain
 
 ```php
 use Jasny\Container\Container;
+use Jasny\Container\AutowireContainerInterface;
 use Jasny\Autowire\AutowireInterface;
 use Jasny\Autowire\ReflectionAutowire;
 use Psr\Container\ContainerInterface;
