@@ -33,7 +33,7 @@ class Container implements AutowireContainerInterface
     /**
      * The array of entries once they have been instantiated.
      *
-     * @var mixed[]
+     * @var array<string,mixed>
      */
     protected $instances = [];
 
@@ -183,8 +183,6 @@ class Container implements AutowireContainerInterface
     /**
      * Get an instance from a subcontainer.
      *
-     * @param string $identifier
-     * @return bool
      * @throws NotFoundException
      * @throws NoSubContainerException
      */
