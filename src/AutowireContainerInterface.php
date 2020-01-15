@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Jasny\Container;
 
@@ -19,6 +21,11 @@ interface AutowireContainerInterface extends ContainerInterface
      * @param string $class    Class name
      * @param mixed  ...$args  Non-autowired arguments
      * @return object
+     *
+     * @template T of object
+     * @phpstan-param class-string<T> $class
+     * @phpstan-param mixed           ...$args
+     * @phpstan-return T
      */
-    public function autowire(string $class, ...$args);
+    public function autowire(string $class, ...$args): object;
 }

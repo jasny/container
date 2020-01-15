@@ -59,7 +59,7 @@ use Jasny\Container\Container;
 use Psr\Container\ContainerInterface;
 
 $container = new Container([
-    Foo::class => static function(ContainerInterface $container) {
+    Foo::class => static function() {
         return new Foo();
     },
     BarInterface::class => static function(ContainerInterface $container) {
@@ -86,7 +86,7 @@ parameter: the container on which dependencies will be fetched.
 Any `iterable` may be passed to the container, not just plain arrays. Once the container has been created it's
 **immutable** entries can't be added, removed or replaced.
 
-#### Delegated lookup
+### Delegated lookup
 
 If a delegate-lookup container was passed as the second argument of the constructor, it will be passed to the anonymous
 function instead.
@@ -100,7 +100,7 @@ $otherContainer = new Container([
 }, $rootContainer);
 ```
 
-#### Entry loader
+### Entry loader
 
 The `EntryLoader` can be used to load entries from PHP files in a directory. This is useful for larger applications to
 organize service declarations.
@@ -136,7 +136,7 @@ $container = new Container($loader);
 
 By default the entry key is the class name and autowiring is used to instantiate the service.
 
-##### Custom instantiation
+#### Custom instantiation
 
 The second (optional) argument is a callback that is applied to each class to create the container entries. This
 function must return an array of Closures.
@@ -147,8 +147,8 @@ use Jasny\Container\ClassLoader;
 use Psr\Container\ContainerInterface;
 
 $callback = static function(string $class): array {
-    $baseClass = preg_replace('/^.+\\/', '', $class);
-    $id = Jasny\snakecase($class);
+    $baseClass = preg_replace('/^.+\\/', '', $class); // Remove namespace
+    $id = strtolower($baseClass);
 
     return [
         $id => static function(ContainerInterface $container) use ($class) {
@@ -162,7 +162,7 @@ $loader = new ClassLoader(new \ArrayIterator(['App\Foo', 'App\Bar', 'App\Qux']),
 $container = new Container($loader);
 ```
 
-##### Load all files in a folder
+#### Load all files in a folder
 
 Instead of just supplying a list of classes, you might want to scan a folder and add all the classes from that folder.
 This can be done with `FQCNIterator` from [jasny/fqcn-reader](https://github.com/jasny/fqcn-reader).
@@ -184,10 +184,26 @@ $container = new Container($loader);
 
 This can also be combined with a callback.
 
+### Modified copy
+
+The container is immutable. It isn't possible to add or change entries after it has been created. However it is possible
+to get a copy of the container with modified entries using the `with()` method.
+
+```php
+$testContainer = $container->with([
+    Foo::class => static function() {
+        return new DummyFoo();
+    },
+]);
+```
+
+The `with()` methods accepts an iterable with callbacks, similar to the container constructor. This means that loaders
+may be used to load replacement entries.
+
 Fetching entries from the container
 ---
 
-Fetching entries from the container is done using the `get` method:
+Fetching entries from the container is done using the `get()` method:
 
 ```php
 $bar = $container->get(BarInterface::class);
@@ -290,7 +306,10 @@ $container = new Container([
 The `Container` class implements `AutowireContainerInterface` which defines an `autowire` method. The first argument
 is the class name.
 
-For more information see [jasny/autowire](https://github.com/jasny/autowire).
+Additional arguments may be provided, which are passed directly to the constructor. No autowiring is applied to these
+parameters.
+
+**For more information see [jasny/autowire](https://github.com/jasny/autowire).**
 
 _Pro tip:_ Autowiring increases coupling, so use it sparsely.
 

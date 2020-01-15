@@ -16,14 +16,13 @@ use Psr\Container\ContainerInterface;
  */
 class ContainerTest extends TestCase
 {
-
     public function testGet()
     {
         $container = new Container([
             "instance" => function () { return "value"; }
         ]);
 
-        $this->assertSame('value', $container->get('instance'));
+        $this->assertEquals('value', $container->get('instance'));
     }
 
     public function testGetNotFound()
@@ -44,7 +43,7 @@ class ContainerTest extends TestCase
             "instance2" => function (ContainerInterface $container) { return $container->get('instance'); }
         ], $container);
 
-        $this->assertSame('value', $container2->get('instance2'));
+        $this->assertEquals('value', $container2->get('instance2'));
     }
 
     public function testOneInstanceOnly()
@@ -200,5 +199,53 @@ class ContainerTest extends TestCase
 
         $container = new Container([]);
         $container->autowire('Foo');
+    }
+
+    public function testWith()
+    {
+        $redContainer = new Container([
+            "color" => function () { return "red"; },
+            "colour" => function (Container $container) { return $container->get('color');},
+            "instance" => function () { return "value"; },
+        ]);
+
+        // Make sure the instances are set
+        $this->assertEquals('red', $redContainer->get('color'));
+        $this->assertEquals('red', $redContainer->get('colour'));
+
+        $blueController = $redContainer->with([
+            'color' => function () { return "blue"; },
+        ]);
+
+        $this->assertInstanceOf(Container::class, $blueController);
+        $this->assertNotSame($redContainer, $blueController);
+
+        $this->assertEquals('red', $redContainer->get('color'));
+        $this->assertEquals('blue', $blueController->get('color'));
+
+        $this->assertEquals('red', $redContainer->get('colour'));
+        $this->assertEquals('blue', $blueController->get('colour'));
+
+        $this->assertEquals('value', $redContainer->get('instance'));
+        $this->assertEquals('value', $blueController->get('instance'));
+    }
+
+    public function testWithUsingDelegateContainer()
+    {
+        $container = new Container([
+            "instanceA" => function () { return "A"; },
+            "instanceB" => function () { return "B"; },
+        ]);
+
+        $containerA = new Container([
+            "instance" => function (ContainerInterface $container) { return $container->get('instanceA'); },
+        ], $container);
+
+        $containerB = $containerA->with([
+            "instance" => function (ContainerInterface $container) { return $container->get('instanceB'); },
+        ]);
+
+        $this->assertEquals('A', $containerA->get('instance'));
+        $this->assertEquals('B', $containerB->get('instance'));
     }
 }

@@ -1,9 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Jasny\Container;
 
 use Improved as i;
-use Interop\Container\ContainerInterface as InteropContainer;
 use Jasny\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
 use Jasny\Container\Exception\NotFoundException;
@@ -13,7 +14,7 @@ use Jasny\Container\Exception\NoSubContainerException;
  * This class is a minimalist dependency injection container.
  * It has compatibility with container-interop's ContainerInterface and delegate-lookup feature.
  */
-class Container implements InteropContainer, AutowireContainerInterface
+class Container implements AutowireContainerInterface
 {
     /**
      * The delegate lookup.
@@ -25,7 +26,7 @@ class Container implements InteropContainer, AutowireContainerInterface
     /**
      * The array of closures defining each entry of the container.
      *
-     * @var \Closure[]
+     * @var array<string,\Closure>
      */
     protected $callbacks;
 
@@ -38,22 +39,23 @@ class Container implements InteropContainer, AutowireContainerInterface
 
 
     /**
-     * Class constructor
+     * Class constructor.
      *
-     * @param iterable<\Closure&callable(ContainerInterface)> $entries
-     * @param ContainerInterface|null                         $delegateLookup
+     * @param iterable<string,\Closure> $entries
+     * @param ContainerInterface|null   $delegateLookup
      */
     public function __construct(iterable $entries, ?ContainerInterface $delegateLookup = null)
     {
-        /** @var array|\Traversable $entries */
-        $this->callbacks = is_array($entries) ? $entries : iterator_to_array($entries);
-        $this->delegateLookupContainer = $delegateLookup ?: $this;
+        /** @var array<string,\Closure>|\Traversable<string,\Closure> $entries */
+        $this->callbacks = is_array($entries) ? $entries : iterator_to_array($entries, true);
+
+        $this->delegateLookupContainer = $delegateLookup ?? $this;
     }
 
     /**
      * Get a copy with added or replaced entries.
      *
-     * @param iterable<\Closure&callable(ContainerInterface)> $entries
+     * @param iterable<\Closure> $entries
      * @return static
      */
     public function with(iterable $entries): self
@@ -61,11 +63,13 @@ class Container implements InteropContainer, AutowireContainerInterface
         $copy = clone $this;
         $copy->instances = [];
 
-        /** @var array|\Traversable $entries */
-        $copy->callbacks = array_merge(
-            $this->callbacks,
-            is_array($entries) ? $entries : iterator_to_array($entries)
-        );
+        if ($copy->delegateLookupContainer === $this) {
+            $copy->delegateLookupContainer = $copy;
+        }
+
+        /** @var array<string,\Closure>|\Traversable<string,\Closure> $entries */
+        $entries = is_array($entries) ? $entries : iterator_to_array($entries, true);
+        $copy->callbacks = array_merge($this->callbacks, $entries);
 
         return $copy;
     }
@@ -77,10 +81,6 @@ class Container implements InteropContainer, AutowireContainerInterface
      * @return mixed
      * @throws NotFoundException
      * @throws NoSubContainerException
-     *
-     * @template T
-     * @phpstan-param class-string<T>|string
-     * @phpstand-return T|mixed
      */
     public function get($identifier)
     {
@@ -121,12 +121,17 @@ class Container implements InteropContainer, AutowireContainerInterface
      * Instantiate a new object, autowire dependencies.
      *
      * @param string $class
-     * @param mixed ...$args
+     * @param mixed  ...$args
      * @return object
      * @throws NotFoundException
      * @throws NoSubContainerException
+     *
+     * @template T of object
+     * @phpstan-param class-string<T> $class
+     * @phpstan-param mixed           ...$args
+     * @phpstan-return T
      */
-    public function autowire(string $class, ...$args)
+    public function autowire(string $class, ...$args): object
     {
         return $this->get(AutowireInterface::class)->instantiate($class, ...$args);
     }
@@ -194,7 +199,7 @@ class Container implements InteropContainer, AutowireContainerInterface
      * Find an subcontainer iterating through the identifier parts.
      *
      * @param string $identifier
-     * @return array  [subcontainer, container id, subidentifier]
+     * @return array{mixed,?string,?string}  [subcontainer, container id, subidentifier]
      * @throws NotFoundException
      * @throws NoSubContainerException
      */

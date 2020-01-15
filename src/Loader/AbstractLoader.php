@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Jasny\Container\Loader;
 
@@ -8,12 +10,12 @@ namespace Jasny\Container\Loader;
 abstract class AbstractLoader implements \OuterIterator
 {
     /**
-     * @var \Iterator
+     * @var \Iterator<mixed>
      */
     protected $items;
 
     /**
-     * @var \ArrayIterator|null
+     * @var \ArrayIterator<string,\Closure>|null
      */
     protected $entries;
 
@@ -21,7 +23,7 @@ abstract class AbstractLoader implements \OuterIterator
     /**
      * Class constructor.
      *
-     * @param \Iterator $items
+     * @param \Iterator<mixed> $items
      */
     public function __construct(\Iterator $items)
     {
@@ -39,7 +41,7 @@ abstract class AbstractLoader implements \OuterIterator
     /**
      * Return the current element
      *
-     * @return callable|null
+     * @return \Closure|null
      */
     public function current(): ?callable
     {
@@ -101,7 +103,7 @@ abstract class AbstractLoader implements \OuterIterator
     /**
      * Returns the inner iterator for the current entry.
      *
-     * @return \Iterator
+     * @return \Iterator<mixed>
      */
     public function getInnerIterator(): \Iterator
     {

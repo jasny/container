@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Jasny\Container\Loader;
 
@@ -21,8 +23,8 @@ class ClassLoader extends AbstractLoader
     /**
      * MappingGenerator constructor.
      *
-     * @param \Iterator $classes
-     * @param callable  $apply    Logic to create entries for a class
+     * @param \Iterator<string> $classes
+     * @param callable          $apply    Logic to create entries for a class
      */
     public function __construct(\Iterator $classes, callable $apply = null)
     {
@@ -62,6 +64,9 @@ class ClassLoader extends AbstractLoader
      *
      * @param string $class
      * @return \Closure[]
+     *
+     * @template T of object
+     * @phpstan-param class-string<T> $class
      */
     protected function createEntry(string $class)
     {
