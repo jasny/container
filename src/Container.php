@@ -7,6 +7,7 @@ namespace Jasny\Container;
 use Improved as i;
 use Jasny\Autowire\AutowireInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Jasny\Container\Exception\NotFoundException;
 use Jasny\Container\Exception\NoSubContainerException;
 
@@ -177,7 +178,11 @@ class Container implements AutowireContainerInterface
             throw new NoSubContainerException("Entry \"$containerId\" is not a PSR-11 compatible container");
         }
 
-        return $subcontainer->get($subId);
+        try {
+            return $subcontainer->get($subId);
+        } catch (NotFoundExceptionInterface $exception) {
+            throw new NotFoundException("Entry \"$identifier\" is not defined.", 0, $exception);
+        }
     }
 
     /**
